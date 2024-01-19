@@ -10,12 +10,14 @@ mapbox_access_token = 'pk.eyJ1IjoiYW5kcmVhYm90dGkiLCJhIjoiY2xuNDdybms2MHBvMjJqbm
 # PAGE CONFIG
 st.set_page_config(page_title="SW Energy Data",   page_icon=':mostly_sunny:', layout="wide")
 st.markdown(
-    """<style>.block-container {padding-top: 0rem; padding-bottom: 0rem; padding-left: 2.5rem; padding-right: 2.5rem;}</style>""",
+    """<style>.block-container {padding-top: 0rem; padding-bottom: 0rem; padding-left: 3rem; padding-right: 3rem;}</style>""",
     unsafe_allow_html=True)
 
 
 
 
+
+# ##### ##### ##### ##### ##### ##### ##### #####
 # TOP CONTAINER
 top_col1, top_col2 = st.columns([6,1])
 with top_col1:
@@ -38,9 +40,9 @@ df_monthly  = st.session_state['df_monthly']
 
 ##### ##### ##### ##### ##### ##### ##### #####
 # Checklist to toggle weekend highlights
-st.sidebar.markdown('### Chart settings')
+st.sidebar.markdown('## Chart settings')
 marker_color = st.sidebar.color_picker(
-    'Marker colour',
+    'Choose marker colour',
     value='#0099cc',
     help=None, on_change=None,
     )
@@ -48,10 +50,18 @@ opacity = 0.4
 hex = marker_color.lstrip('#')
 marker_color__rgb = tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
 marker_color__rgba = 'rgba' + str(marker_color__rgb + (opacity,))
-st.sidebar.write(f'RGB: {marker_color__rgb} | HEX: {marker_color}')
+st.sidebar.caption(f'RGB: {marker_color__rgb} | HEX: {marker_color}')
 
-# st.sidebar.divider()
-show_weekends = st.sidebar.checkbox('Highlight weekends')
+# Show weekends as filled bars
+st.sidebar.markdown('')
+show_weekends = st.sidebar.checkbox('Highlight weekends', help='Highlight weekends in hourly and daily charts, as grey solid bands')
+
+
+# Slider for chart height
+st.sidebar.markdown('')
+chart_height = st.sidebar.slider("Select Chart Height", 400, 800, step=20, value=580)
+
+
 
 
 
@@ -80,6 +90,7 @@ with tab_hourly:
         title='Hourly Electricity Consumption',
         xaxis_title='Datetime',
         yaxis_title='Energy (kWh)',
+        height=chart_height,
     )
     fig_hourly_line.update_xaxes(rangeslider_visible=True)
     fig_hourly_line.update_layout(
@@ -107,10 +118,10 @@ with tab_hourly:
 
 
 with tab_daily:
+
     # Plotly column chart for df_daily
     df_plot = df_daily.reset_index()
     fig_daily_bar = go.Figure()
-    # fig_daily_bar = px.bar(df_daily.reset_index(), x='Datetime', y='Energy', title='Daily Electricity Consumption')
     fig_daily_bar.add_trace(
         go.Bar(
             x=df_plot['Datetime'], y=df_plot['Energy'], marker_color=marker_color,
@@ -119,7 +130,8 @@ with tab_daily:
     fig_daily_bar.update_layout(
         title='Daily Electricity Consumption',
         xaxis_title='Datetime',
-        yaxis_title='Energy (kWh)'
+        yaxis_title='Energy (kWh)',
+        height=chart_height,
     )
     fig_daily_bar.update_layout(
         xaxis=dict(
@@ -148,8 +160,22 @@ with tab_daily:
 with tab_monthly:
 
     # Plotly column chart for df_monthly
-    fig_monthly = px.bar(df_monthly.reset_index(), x='Datetime', y='Energy', title='Monthly Electricity Consumption')
+    # fig_monthly = px.bar(df_monthly.reset_index(), x='Datetime', y='Energy', title='Monthly Electricity Consumption')
 
-    fig_monthly.update_traces(marker_color=marker_color__rgb)
-    fig_monthly.update_yaxes(title_text='Energy (kWh)')
-    st.plotly_chart(fig_monthly, use_container_width=True)
+    # Convert 'Datetime' to 'Month Year' format if it's not already formatted
+    df_monthly['MonthYear'] = df_monthly.index.strftime('%B %Y')  # Change this line if 'Datetime' is a column
+    df_plot = df_monthly
+
+    fig_monthly_bar = go.Figure()
+    fig_monthly_bar.add_trace(
+        go.Bar(
+            x=df_plot['MonthYear'], y=df_plot['Energy'], marker_color=marker_color,
+            )
+    )
+    fig_monthly_bar.update_layout(
+        title='Monthly Electricity Consumption',
+        # xaxis_title='Month and Year',
+        yaxis_title='Energy',
+        height=chart_height,
+    )
+    st.plotly_chart(fig_monthly_bar, use_container_width=True)
