@@ -38,7 +38,20 @@ df_monthly  = st.session_state['df_monthly']
 
 ##### ##### ##### ##### ##### ##### ##### #####
 # Checklist to toggle weekend highlights
-show_weekends = st.sidebar.checkbox('Highlight Weekends')
+st.sidebar.markdown('### Chart settings')
+marker_color = st.sidebar.color_picker(
+    'Marker colour',
+    value='#0099cc',
+    help=None, on_change=None,
+    )
+opacity = 0.4
+hex = marker_color.lstrip('#')
+marker_color__rgb = tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
+marker_color__rgba = 'rgba' + str(marker_color__rgb + (opacity,))
+st.sidebar.write(f'RGB: {marker_color__rgb} | HEX: {marker_color}')
+
+# st.sidebar.divider()
+show_weekends = st.sidebar.checkbox('Highlight weekends')
 
 
 
@@ -47,10 +60,28 @@ tab_hourly, tab_daily, tab_monthly = st.tabs(['Hourly Frequency', 'Daily Frequen
 
 
 with tab_hourly:
-    # Plotly line chart for df_hourly
-    fig_hourly_line = px.line(df_hourly.reset_index(), x='Datetime', y='Energy', title='Hourly Electricity Consumption')
+
+    # Reset index if 'Datetime' is not already a column
+    df_plot = df_hourly.reset_index()
+
+    # Create a scatter plot (line chart) using go.Scatter
+    fig_hourly_line = go.Figure()
+    fig_hourly_line.add_trace(
+        go.Scatter(
+            x=df_plot['Datetime'],
+            y=df_plot['Energy'],
+            mode='lines',
+            fill='tozeroy',
+            fillcolor=marker_color__rgba,
+            line_color=marker_color,
+            )
+    )
+    fig_hourly_line.update_layout(
+        title='Hourly Electricity Consumption',
+        xaxis_title='Datetime',
+        yaxis_title='Energy (kWh)',
+    )
     fig_hourly_line.update_xaxes(rangeslider_visible=True)
-    fig_hourly_line.update_yaxes(title_text='Energy (kWh)')
     fig_hourly_line.update_layout(
         xaxis=dict(
             rangeselector=dict(
@@ -77,8 +108,19 @@ with tab_hourly:
 
 with tab_daily:
     # Plotly column chart for df_daily
-    fig_daily_bar = px.bar(df_daily.reset_index(), x='Datetime', y='Energy', title='Daily Electricity Consumption')
-    fig_daily_bar.update_yaxes(title_text='Energy (kWh)')
+    df_plot = df_daily.reset_index()
+    fig_daily_bar = go.Figure()
+    # fig_daily_bar = px.bar(df_daily.reset_index(), x='Datetime', y='Energy', title='Daily Electricity Consumption')
+    fig_daily_bar.add_trace(
+        go.Bar(
+            x=df_plot['Datetime'], y=df_plot['Energy'], marker_color=marker_color,
+            )
+    )
+    fig_daily_bar.update_layout(
+        title='Daily Electricity Consumption',
+        xaxis_title='Datetime',
+        yaxis_title='Energy (kWh)'
+    )
     fig_daily_bar.update_layout(
         xaxis=dict(
             rangeselector=dict(
@@ -107,5 +149,7 @@ with tab_monthly:
 
     # Plotly column chart for df_monthly
     fig_monthly = px.bar(df_monthly.reset_index(), x='Datetime', y='Energy', title='Monthly Electricity Consumption')
+
+    fig_monthly.update_traces(marker_color=marker_color__rgb)
     fig_monthly.update_yaxes(title_text='Energy (kWh)')
     st.plotly_chart(fig_monthly, use_container_width=True)

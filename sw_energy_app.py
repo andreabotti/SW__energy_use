@@ -30,32 +30,76 @@ st.markdown('---')
 
 # Variables to store the selections
 data_sources = ["Local", "FTP", "GitHub"]
-selected_source = None
+FTP_PATH    = r'https://absrd.xyz/streamlit_apps/SW__energy_use/'
 
 
-upload_col1, upload_col2 = st.columns([1,2])
-with upload_col1:
+datasource_col_1, datasource_col_2 = st.columns([1,1])
+
+with datasource_col_1:
+
+    source_choice = st.radio(
+        label='Choose data source',
+        options=['Upload a CSV file', 'Use sample data from FTP'],
+        index=1, help=None, on_change=None,  horizontal=False,
+        captions=None, label_visibility="visible",
+        )
+
+with datasource_col_2:
     # File uploader widget
     uploaded_file = st.file_uploader('Upload a CSV file', type='csv')
 
 
-if uploaded_file is not None:
-    # Button to trigger data processing
-    process_button = st.button('Process Data')
 
-    if process_button:
-        df = pd.read_csv(uploaded_file)
+if source_choice == 'Upload a CSV file':
 
-        # Process the data
-        df_hourly, df_daily, df_monthly = process_data(df)
-        st.success('Data has been processed from the uploaded CSV file')
+    if uploaded_file is not None:
 
+        # Button to trigger data processing
+        process_button = st.button('Process Data')
+        if process_button:
+            df = pd.read_csv(uploaded_file)
 
-        ##### ##### ##### ##### ##### ##### ##### #####
-        st.session_state['df_hourly']   = df_hourly
-        st.session_state['df_daily']    = df_daily
-        st.session_state['df_monthly']  = df_monthly
+            # Process the data
+            df_hourly, df_daily, df_monthly = process_data(df)
+            st.success('Data has been processed from the uploaded CSV file')
 
 
-    else:
-        st.warning('Please upload data and click to process')
+            ##### ##### ##### ##### ##### ##### ##### #####
+            st.session_state['df_hourly']   = df_hourly
+            st.session_state['df_daily']    = df_daily
+            st.session_state['df_monthly']  = df_monthly
+
+            st.markdown('---')
+            with st.expander('Data preview'):
+                df_table = df.drop(['Account Number', 'MPAN', 'Meter Serial Number'], axis=1)
+                st.dataframe(df_table)
+
+        else:
+            st.warning('Please upload data and click to process')
+
+
+else:
+    with datasource_col_1:
+        st.markdown(f'###### FTP Path: {FTP_PATH}')
+
+    csv_file_path = FTP_PATH + 'ConsumptionStatement_1200051133916.csv'
+    df = pd.read_csv(
+        csv_file_path,
+        encoding='ISO-8859-1',
+        keep_default_na=False, na_values=['NaN'],
+        )
+
+    # Process the data
+    df_hourly, df_daily, df_monthly = process_data(df)
+    st.success('Data has been processed from the uploaded CSV file')
+
+
+    ##### ##### ##### ##### ##### ##### ##### #####
+    st.session_state['df_hourly']   = df_hourly
+    st.session_state['df_daily']    = df_daily
+    st.session_state['df_monthly']  = df_monthly
+
+    st.markdown('---')
+    with st.expander('Data preview'):
+        df_table = df.drop(['Account Number', 'MPAN', 'Meter Serial Number'], axis=1)
+        st.dataframe(df_table)

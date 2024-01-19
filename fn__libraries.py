@@ -1,7 +1,8 @@
 import pandas as pd, numpy as np
+from datetime import datetime, timedelta
 import plotly.express as px
-from datetime import datetime
-from datetime import timedelta
+import plotly.graph_objects as go
+
 import streamlit as st
 from streamlit_super_slider import st_slider
 
@@ -127,6 +128,6 @@ def add_weekend_highlights_group(fig, df):
         start, end = group.index.min(), group.index.max() + pd.Timedelta(days=1)
         fig.add_vrect(
             x0=start, x1=end,
-            fillcolor='grey', opacity=0.2,
+            fillcolor='grey', opacity=0.15,
             layer='below', line_width=0
         )
