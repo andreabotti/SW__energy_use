@@ -17,7 +17,7 @@ st.markdown(
 
 
 # TOP CONTAINER
-top_col1, top_col2 = st.columns([6,1])
+top_col1, top_col2 = st.columns([3,1])
 with top_col1:
     st.markdown("# Stanton Williams Energy 2023")
     st.markdown("#### Reporting of Stanton Williams metered electricity data from 2023")
@@ -253,3 +253,42 @@ with autumn_tab:
         df_table_typday = df_dict__typ_day[12]
         fig_hourly_typday = create__typ_day__line_chart(df=df_table_typday, month=month_short)
         st.plotly_chart(fig_hourly_typday, use_container_width=True)
+
+
+
+
+
+with top_col2:
+
+    # Example values for the color scale - adjust these according to your actual scale
+    floor, ceiling, step = 0, 40, 5  
+    gradient_values = list(range(floor, ceiling + 1, step))
+
+    # These colors need to be chosen to approximate the 'hot_r' scale as closely as possible
+    gradient_colors = ['#fee5d9', '#fdd0a2', '#fdae6b', '#fd8d3c', '#f16913', '#d94801', '#a63603', '#7f2704']
+
+
+    st.markdown('<br><br>', unsafe_allow_html=True)
+    st.markdown("###### Color Scale Legend (kWh)")
+
+
+    # Start a container div for the horizontal layout of color containers
+    legend_html = "<div style='display: flex; align-items: center; justify-content: start; flex-wrap: nowrap;'>"
+
+    # Append each color box and label in a vertical container div to the horizontal container div
+    for value in gradient_values:
+        color_index = int((value - floor) / (ceiling - floor) * (len(gradient_colors) - 1))
+        color = gradient_colors[color_index]
+        legend_html += (
+            "<div style='display: flex; flex-direction: column; align-items: center; margin-right: 5px;'>"
+            f"<div style='width: 25px; height: 20px; background-color: {color};'>&nbsp;</div>"
+            f"<span style='font-size: 12px;'>{value}</span>"
+            "</div>"
+        )
+
+
+    # Close the container div
+    legend_html += "</div>"
+
+    # Display the horizontal legend
+    st.markdown(legend_html, unsafe_allow_html=True)

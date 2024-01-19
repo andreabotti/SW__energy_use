@@ -46,8 +46,16 @@ def prepare__df_hourly_heatmap(df):
 
 def create__fig_hourly_heatmap(df, label_hrs):
     mon = df['Datetime'].iloc[0].strftime("%b")
+
+    # Ensure 'Date' is a datetime column and format it as "dd mmm"
+    df['FormattedDate'] = df['Datetime'].dt.strftime('%d<br>%b')
+
     fig_hourly_heatmap = px.density_heatmap(
-        df, x='Date', y='Hour', z='Energy', 
+        df,
+        # x='Date',
+        x='FormattedDate',
+        y='Hour',
+        z='Energy', 
         title=f'Hourly Heatmap for {mon}', 
         color_continuous_scale='hot_r',
         range_color=[0, 40],
@@ -62,14 +70,14 @@ def create__fig_hourly_heatmap(df, label_hrs):
     fig_hourly_heatmap.update_layout(
         xaxis={'type': 'category'},
         title={
-            'x': 0.5,
+            'x': 0.56,
             'xanchor': 'center',
             # 'yanchor': 'top',
             }
         )
     fig_hourly_heatmap.update_layout(coloraxis_showscale=False)
 
-    fig_hourly_heatmap.update_xaxes(title_text='Date')
+    fig_hourly_heatmap.update_xaxes(title_text='Date', tickangle=0)
 
     hour_labels = np.arange(0, 24, 3)
     fig_hourly_heatmap.update_yaxes(
@@ -84,10 +92,11 @@ def create__fig_hourly_heatmap(df, label_hrs):
 
 
 
+
 # Plot using Plotly
 def create__typ_day__line_chart(df, month):
 
-    fig = px.line(df, x='Hour', y='Average Energy', markers=True, title=f'Typical Day Profile for {month}')
+    fig = px.line(df, x='Hour', y='Average Energy', markers=True, title=f'Average Day for {month}')
     fig.update_layout(xaxis_title='Hour of Day', yaxis_title='Average Energy')
 
     fig.update_layout(
@@ -98,7 +107,7 @@ def create__typ_day__line_chart(df, month):
     fig.update_layout(
         xaxis={'type': 'category'},
         title={
-            'x': 0.5,
+            'x': 0.56,
             'xanchor': 'center',
             }
         )
