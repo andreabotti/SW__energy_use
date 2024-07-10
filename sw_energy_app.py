@@ -30,7 +30,7 @@ st.markdown('---')
 
 # Variables to store the selections
 data_sources = ["Local", "FTP", "GitHub"]
-FTP_PATH    = r'https://absrd.xyz/streamlit_apps/SW__energy_use/'
+FTP_PATH    = r'https://absrd.xyz/streamlit_apps/SW__energy_use/data/'
 
 
 datasource_col_1, datasource_col_2 = st.columns([1,1])
@@ -82,7 +82,7 @@ else:
     with datasource_col_1:
         st.markdown(f'###### FTP Path: {FTP_PATH}')
 
-    csv_file_path = FTP_PATH + 'ConsumptionStatement_1200051133916.csv'
+    csv_file_path = FTP_PATH + 'SWA_ConsumptionStatement_2023.01.01-2024.07.08.csv'
     df = pd.read_csv(
         csv_file_path,
         encoding='ISO-8859-1',
